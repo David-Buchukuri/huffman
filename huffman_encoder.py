@@ -1,4 +1,5 @@
 from heapq import heapify, heappop, heappush
+import pickle
 
 class Node:
     def __init__(self, count, char = None) -> None:
@@ -24,6 +25,46 @@ class HuffmanEncoder:
         self.decodeTable = {}
 
         self.__buildEncodingDecodingTables()
+    
+    def compressTextIntoBinaryFile(self):
+        # first byte in the file will denote the padding of the last byte of the information
+        # next 4 bytes will denote size of the decoding table
+        # next n bits will denote the decoding table
+        # and after that all the bytes are of original text 
+
+        bitsArray = []
+        for char in self.text:
+            for bit in self.encodeTable[char]:
+                bitsArray.append(bit)
+        
+
+        if len(bitsArray) % 8 == 0:
+            padding = 0
+        else:
+            padding = 8 - len(bitsArray) % 8
+
+        serializedTable = pickle.dumps(self.decodeTable)
+        tableSize = len(serializedTable)
+
+        file = open('./encoded.bin', 'wb')
+        file.write(bytes([padding]))
+        file.write(tableSize.to_bytes(4, 'big'))
+        file.write(serializedTable)
+
+        currByte = ""
+        bytesArray = []
+        for bit in bitsArray:
+            currByte += bit
+
+            if len(currByte) == 8:
+                bytesArray.append(int(currByte, 2))
+                currByte = "" 
+        
+        if len(currByte) != 0:
+            bytesArray.append(int(currByte, 2))
+        
+        file.write(bytes(bytesArray))
+        file.close()
 
     
     def __buildEncodingDecodingTables(self):
