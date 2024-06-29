@@ -1,5 +1,6 @@
 from huffman_encoder import HuffmanEncoder
+from huffman_decoder import HuffmanDecoder
 
 encoder = HuffmanEncoder('./plaintext.txt')
-for char in encoder.encodeTable:
-    print(f"{char} : {encoder.encodeTable[char]}") 
+encoder.compressTextIntoBinaryFile()
+HuffmanDecoder.decompress('./encoded.bin')
